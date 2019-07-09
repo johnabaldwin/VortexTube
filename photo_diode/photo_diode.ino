@@ -7,10 +7,13 @@ struct TimeKeeper {
   double rpm;
 };
 
-int frequency = 100;
+struct Sound {
+  int frequency;
+  int multiplier;
+};
 
 TimeKeeper rpm = {0,0,0};
-
+Sound sound = {100, 5};
 void setup() {
   Serial.begin(9600);
   while(!Serial) {}
@@ -56,24 +59,24 @@ void getRPM() {
 
 void setTone() {
   // If there is input to take from serial input, read it in.
-  int newFrequency = 0;
-  int i = 0;
-  Serial.println(newFrequency);
+  int newFreq = 0;
   while (Serial.available() > 0) {
-    i = Serial.parseInt();
+    newFreq = Serial.parseInt();
     Serial.read();
   }
-  Serial.println(i);
   // Don't accept frequencies lower than 31.
-  if (i < 31) {
+  if (5 < newFreq && newFreq < 31) {
     Serial.println("No tone lower than 31Hz can be generated");
     noTone(Speaker);
     return;
+  } else if (0 < newFreq && newFreq <= 5) {
+    //Set the multiplier to control amplitude
+    sound.multiplier = newFreq;
   } else {
-    frequency = i;
+    sound.frequency = newFreq;
     // Stop the old tone in order to create the new one.
     noTone(Speaker);
   }
-  // Set the tone to the Speaker PWM output.
-  tone(Speaker, frequency);
+  // Set the tone to the Speaker PWM output and MATH to controll amplitude
+  tone(Speaker, (int)(((double)sound.multiplier/5.0) * (double)sound.frequency));
 }
